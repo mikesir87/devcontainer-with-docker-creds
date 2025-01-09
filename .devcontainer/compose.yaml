@@ -1,0 +1,27 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:20
+    network_mode: host
+    volumes:
+      - ../:/workspaces/project:cached
+      - socket-proxy:/tmp/proxy
+    command: sleep infinity
+    environment:
+      DOCKER_HOST: unix:///tmp/proxy/docker.sock
+      DOCKER_CONFIG: /workspaces/project/.docker
+ 
+  socket-proxy:
+    image: mikesir87/docker-socket-proxy
+    volumes:
+      - socket-proxy:/tmp/proxy
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CONFIG_DATA: |
+        mutators:
+          - type: volumePath
+            from: /workspaces/project
+            to: $PWD
+      LISTEN_SOCKET_PATH: /tmp/proxy/docker.sock
+
+volumes:
+  socket-proxy:
